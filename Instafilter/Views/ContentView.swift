@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
 struct ContentView: View {
     @State private var image: Image?
@@ -22,7 +24,24 @@ struct ContentView: View {
     }
     
     func loadImage() {
-        image = Image("example")
+        // image = Image("example")
+        
+        guard let inputUIImage = UIImage(named: "example") else {
+            return
+        }
+        let ciImage = CIImage(image: inputUIImage)
+        
+        let context = CIContext()
+        let filter = CIFilter.sepiaTone()
+        
+        filter.inputImage = ciImage
+        filter.intensity = 0.9
+        
+        guard let outputCIImage = filter.outputImage else { return }
+        if let outputCGImage = context.createCGImage(outputCIImage, from: outputCIImage.extent) {
+            let uiImage = UIImage(cgImage: outputCGImage)
+            image = Image(uiImage: uiImage)
+        }
     }
 }
 
