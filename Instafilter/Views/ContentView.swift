@@ -9,26 +9,20 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var showingActionSheet = false
-    @State private var backgroundColor = Color.white
+    @State private var image: Image?
     
     var body: some View {
         VStack {
-            Text("Hello, World!")
-                .background(backgroundColor)
-                .onTapGesture {
-                    self.showingActionSheet.toggle()
-            }
+            image?
+                .resizable()
+                .scaledToFit()
         }
-        .actionSheet(isPresented: $showingActionSheet) { () -> ActionSheet in
-            ActionSheet(title: Text("Demo"), message: Text("Msg"), buttons: [
-                ActionSheet.Button.destructive(Text("destructive")) {
-                    self.backgroundColor = .yellow
-                },
-                .default(Text("Default One")),
-                .cancel()
-            ])
-        }
+        .onAppear(perform: loadImage)
+        
+    }
+    
+    func loadImage() {
+        image = Image("example")
     }
 }
 
