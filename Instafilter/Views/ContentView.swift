@@ -28,10 +28,19 @@ struct ContentView: View {
         let beginImage = CIImage(image: inputImage)
 
         let context = CIContext()
-        let currentFilter = CIFilter.sepiaTone()
         
-        currentFilter.inputImage = beginImage
-        currentFilter.intensity = 1
+//        let currentFilter = CIFilter.sepiaTone()
+//        currentFilter.inputImage = beginImage
+//        currentFilter.intensity = 0.5
+        
+//        let currentFilter = CIFilter.pixellate()
+//        currentFilter.inputImage = beginImage
+//        currentFilter.scale = 100
+        
+        let currentFilter = CIFilter.crystallize()
+        // currentFilter.inputImage = beginImage // this will CRASH!
+        currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
+        currentFilter.radius = 90
         
         // get a CIImage from our filter or exit if that fails
         guard let outputImage = currentFilter.outputImage else { return }
