@@ -36,8 +36,22 @@ struct ContentView: View {
             return
         }
         self.image = Image(uiImage: inputImage)
+        
+        // Save image to the photo library
+        let imageSaver = ImageSaver()
+        imageSaver.saveToPhotoLibrary(uiImage: inputImage)
     }
     
+}
+
+class ImageSaver: NSObject {
+    func saveToPhotoLibrary(uiImage: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(uiImage, self, #selector(saveError), nil)
+    }
+    
+    @objc func saveError(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        print("Saved!")
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
