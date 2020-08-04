@@ -19,8 +19,11 @@ struct ContentView: View {
     @State private var processedUIImage: UIImage?
     
     @State private var currentFilter: CIFilter = CIFilter.sepiaTone()
+    // Challenge II: - Make the Change Filter button change its title to show the name of the currently selected filter.
     @State private var currentFilterName = "Sepia Tone"
     @State private var filterIntensity = 0.5
+    @State private var filterRadius = 180.0
+    @State private var filterScale = 9.0
     
     @State private var showingImagePicker = false
     @State private var showingFilterSheet = false
@@ -37,6 +40,21 @@ struct ContentView: View {
             self.filterIntensity = newValue
             self.applyProcessing()
         })
+        
+        let radiusBinding = Binding<Double>(get: {
+            self.filterRadius
+        }, set: { newValue in
+            self.filterRadius = newValue
+            self.applyProcessing()
+        })
+        
+        let scaleBinding = Binding<Double>(get: {
+            self.filterScale
+        }, set: { newValue in
+            self.filterScale = newValue
+            self.applyProcessing()
+        })
+        
         
         return VStack {
             ZStack {
@@ -60,10 +78,22 @@ struct ContentView: View {
                 self.showingImagePicker = true
             }
             
-            HStack {
-                Text("Intensity")
+            // MARK: - Control Group
+            VStack {
+                HStack {
+                    Text("Intensity")
+                    Slider(value: intensityBinding)
+                }
                 
-                Slider(value: intensityBinding)
+                HStack {
+                    Text("Radius")
+                    Slider(value: radiusBinding)
+                }
+                
+                HStack {
+                    Text("Scale")
+                    Slider(value: scaleBinding)
+                }
             }
             .padding(.vertical)
             
