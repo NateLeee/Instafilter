@@ -23,7 +23,11 @@ struct ContentView: View {
     
     @State private var showingImagePicker = false
     @State private var showingFilterSheet = false
+    
+    // Challenge I: - Try making the Save button show an error if there was no image in the image view.
     @State private var showingSavingStatus = false
+    @State private var savingStatusMsg: String = ""
+    @State private var savingStatusTitle = ""
     
     var body: some View {
         let intensityBinding = Binding<Double>(get: {
@@ -71,22 +75,32 @@ struct ContentView: View {
                 
                 Button("Save") {
                     // Save the photo applied with the filter
-                    if let processedUIImage = self.processedUIImage {
-                        let imageSaver = ImageSaver()
+                    guard let processedUIImage = self.processedUIImage else {
+                        // Show an error alert
+                        self.showingSavingStatus = true
+                        self.savingStatusTitle = "Oops!"
+                        self.savingStatusMsg = "There appears to be no photo."
                         
-                        imageSaver.successHandler = {
-                            self.showingSavingStatus = true
-                        }
-                        
-                        imageSaver.errorHandler = {
-                            print("Oops: \($0.localizedDescription)")
-                        }
-                        
-                        imageSaver.writeToPhotoLibrary(processedUIImage)
+                        return
                     }
+                    
+                    let imageSaver = ImageSaver()
+                    
+                    imageSaver.successHandler = {
+                        self.showingSavingStatus = true
+                        self.savingStatusTitle = "Saved!"
+                        self.savingStatusMsg = "Thanks for using this app!"
+                    }
+                    
+                    imageSaver.errorHandler = {
+                        self.showingSavingStatus = true
+                        self.savingStatusTitle = "Error!"
+                        self.savingStatusMsg = "\($0.localizedDescription)"
+                    }
+                    
+                    imageSaver.writeToPhotoLibrary(processedUIImage)
                 }
             }
-            
         }
         .padding([.bottom, .horizontal])
         .navigationBarTitle("Instafilter")
@@ -123,7 +137,7 @@ struct ContentView: View {
             ])
         }
         .alert(isPresented: $showingSavingStatus) {
-            Alert(title: Text("Saved!"), message: nil, dismissButton: .cancel())
+            Alert(title: Text("\(self.savingStatusTitle)"), message: Text("\(self.savingStatusMsg)"), dismissButton: .default(Text("Got it")))
         }
     }
     
