@@ -16,12 +16,14 @@ struct ContentView: View {
     
     @State private var image: Image?
     @State private var inputUIImage: UIImage?
+    @State private var processedUIImage: UIImage?
     
     @State private var currentFilter: CIFilter = CIFilter.sepiaTone()
     @State private var filterIntensity = 0.5
     
     @State private var showingImagePicker = false
     @State private var showingFilterSheet = false
+    @State private var showingSavingStatus = false
     
     var body: some View {
         let intensityBinding = Binding<Double>(get: {
@@ -62,14 +64,26 @@ struct ContentView: View {
             
             HStack {
                 Button("Change Filter") {
-                    // TODO: - Change Filter
                     self.showingFilterSheet = true
                 }
                 
                 Spacer()
                 
                 Button("Save") {
-                    // TODO: - Save the photo applied with the filter
+                    // Save the photo applied with the filter
+                    if let processedUIImage = self.processedUIImage {
+                        let imageSaver = ImageSaver()
+                        
+                        imageSaver.successHandler = {
+                            self.showingSavingStatus = true
+                        }
+                        
+                        imageSaver.errorHandler = {
+                            print("Oops: \($0.localizedDescription)")
+                        }
+                        
+                        imageSaver.writeToPhotoLibrary(processedUIImage)
+                    }
                 }
             }
             
@@ -107,6 +121,9 @@ struct ContentView: View {
                     },
                     .cancel()
             ])
+        }
+        .alert(isPresented: $showingSavingStatus) {
+            Alert(title: Text("Saved!"), message: nil, dismissButton: .cancel())
         }
     }
     
@@ -146,6 +163,10 @@ struct ContentView: View {
             else { return }
         
         let outputUIImage = UIImage(cgImage: outputCGImage)
+        
+        // Stash this processed UIImage
+        processedUIImage = outputUIImage
+        
         image = Image(uiImage: outputUIImage)
     }
 }

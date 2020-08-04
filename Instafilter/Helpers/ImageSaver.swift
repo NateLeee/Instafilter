@@ -9,5 +9,19 @@
 import UIKit
 
 class ImageSaver: NSObject {
+    var successHandler: (() -> Void)?
+    var errorHandler: ((Error) -> Void)?
     
+    
+    func writeToPhotoLibrary(_ uiImage: UIImage) {
+        UIImageWriteToSavedPhotosAlbum(uiImage, self, #selector(saveError), nil)
+    }
+    
+    @objc private func saveError(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            errorHandler?(error)
+        } else {
+            successHandler?()
+        }
+    }
 }
