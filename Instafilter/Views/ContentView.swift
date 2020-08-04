@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var processedUIImage: UIImage?
     
     @State private var currentFilter: CIFilter = CIFilter.sepiaTone()
+    @State private var currentFilterName = "Sepia Tone"
     @State private var filterIntensity = 0.5
     
     @State private var showingImagePicker = false
@@ -67,7 +68,7 @@ struct ContentView: View {
             .padding(.vertical)
             
             HStack {
-                Button("Change Filter") {
+                Button("Change Filter (\(currentFilterName))") {
                     self.showingFilterSheet = true
                 }
                 
@@ -113,25 +114,25 @@ struct ContentView: View {
                 message: Text("Choose a filter"),
                 buttons: [
                     .default(Text("Crystallize")) {
-                        self.setFilter(CIFilter.crystallize())
+                        self.setFilter(CIFilter.crystallize(), "Crystallize")
                     },
                     .default(Text("Edges")) {
-                        self.setFilter(CIFilter.edges())
+                        self.setFilter(CIFilter.edges(), "Edges")
                     },
                     .default(Text("Gaussian Blur")) {
-                        self.setFilter(CIFilter.gaussianBlur())
+                        self.setFilter(CIFilter.gaussianBlur(), "Gaussian Blur")
                     },
                     .default(Text("Pixellate")) {
-                        self.setFilter(CIFilter.pixellate())
+                        self.setFilter(CIFilter.pixellate(), "Pixellate")
                     },
                     .default(Text("Sepia Tone")) {
-                        self.setFilter(CIFilter.sepiaTone())
+                        self.setFilter(CIFilter.sepiaTone(), "Sepia Tone")
                     },
                     .default(Text("Unsharp Mask")) {
-                        self.setFilter(CIFilter.unsharpMask())
+                        self.setFilter(CIFilter.unsharpMask(), "Unsharp Mask")
                     },
                     .default(Text("Vignette")) {
-                        self.setFilter(CIFilter.vignette())
+                        self.setFilter(CIFilter.vignette(), "Vignette")
                     },
                     .cancel()
             ])
@@ -142,8 +143,9 @@ struct ContentView: View {
     }
     
     // Custom Funcs go here...
-    func setFilter(_ filter: CIFilter) {
+    func setFilter(_ filter: CIFilter, _ filterName: String) {
         self.currentFilter = filter
+        self.currentFilterName = filterName
         loadImage()
     }
     
