@@ -17,19 +17,20 @@ struct ContentView: View {
     @State private var image: Image?
     @State private var inputUIImage: UIImage?
     
-    @State private var currentFilter = CIFilter.sepiaTone()
+    @State private var currentFilter: CIFilter = CIFilter.sepiaTone()
     @State private var filterIntensity = 0.5
+    
     @State private var showingImagePicker = false
+    @State private var showingFilterSheet = false
     
     var body: some View {
         let intensityBinding = Binding<Double>(get: {
             self.filterIntensity
         }, set: { newValue in
             self.filterIntensity = newValue
-            print(newValue)
             self.applyProcessing()
         })
-            
+        
         return VStack {
             ZStack {
                 Rectangle()
@@ -62,6 +63,7 @@ struct ContentView: View {
             HStack {
                 Button("Change Filter") {
                     // TODO: - Change Filter
+                    self.showingFilterSheet = true
                 }
                 
                 Spacer()
@@ -77,9 +79,43 @@ struct ContentView: View {
         .sheet(isPresented: $showingImagePicker, onDismiss: loadImage) {
             ImagePicker(inputUIImage: self.$inputUIImage)
         }
+        .actionSheet(isPresented: $showingFilterSheet) {
+            ActionSheet(
+                title: Text("Filter List"),
+                message: Text("Choose a filter"),
+                buttons: [
+                    .default(Text("Crystallize")) {
+                        self.setFilter(CIFilter.crystallize())
+                    },
+                    .default(Text("Edges")) {
+                        self.setFilter(CIFilter.edges())
+                    },
+                    .default(Text("Gaussian Blur")) {
+                        self.setFilter(CIFilter.gaussianBlur())
+                    },
+                    .default(Text("Pixellate")) {
+                        self.setFilter(CIFilter.pixellate())
+                    },
+                    .default(Text("Sepia Tone")) {
+                        self.setFilter(CIFilter.sepiaTone())
+                    },
+                    .default(Text("Unsharp Mask")) {
+                        self.setFilter(CIFilter.unsharpMask())
+                    },
+                    .default(Text("Vignette")) {
+                        self.setFilter(CIFilter.vignette())
+                    },
+                    .cancel()
+            ])
+        }
     }
     
     // Custom Funcs go here...
+    func setFilter(_ filter: CIFilter) {
+        self.currentFilter = filter
+        loadImage()
+    }
+    
     func loadImage() {
         guard let inputUIImage = inputUIImage else { return }
         
@@ -91,12 +127,23 @@ struct ContentView: View {
     }
     
     func applyProcessing() {
-        currentFilter.intensity = Float(filterIntensity)
+        // currentFilter.intensity = Float(filterIntensity)
+        // currentFilter.setValue(Float(filterIntensity), forKey: kCIInputIntensityKey) // This could crash!
+        let inputKeys = currentFilter.inputKeys
+        if inputKeys.contains(kCIInputIntensityKey) {
+            currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey)
+        }
+        if inputKeys.contains(kCIInputRadiusKey) {
+            currentFilter.setValue(filterIntensity * 180, forKey: kCIInputRadiusKey)
+        }
+        if inputKeys.contains(kCIInputScaleKey) {
+            currentFilter.setValue(filterIntensity * 9, forKey: kCIInputScaleKey)
+        }
         
         guard
             let outputCIImage = currentFilter.outputImage,
             let outputCGImage = ciContext.createCGImage(outputCIImage, from: outputCIImage.extent)
-        else { return }
+            else { return }
         
         let outputUIImage = UIImage(cgImage: outputCGImage)
         image = Image(uiImage: outputUIImage)
