@@ -22,8 +22,11 @@ struct ContentView: View {
     // Challenge II: - Make the Change Filter button change its title to show the name of the currently selected filter.
     @State private var currentFilterName = "Sepia Tone"
     @State private var filterIntensity = 0.5
-    @State private var filterRadius = 180.0
-    @State private var filterScale = 9.0
+    @State private var filterIntensityDisabled = true
+    @State private var filterRadius = 0.5
+    @State private var filterRadiusDisabled = true
+    @State private var filterScale = 0.5
+    @State private var filterScaleDisabled = true
     
     @State private var showingImagePicker = false
     @State private var showingFilterSheet = false
@@ -70,6 +73,7 @@ struct ContentView: View {
                     Text("Tap to select a picture")
                         .foregroundColor(.white)
                         .font(.headline)
+                        .shadow(color: .black, radius: 1, x: 0, y: 1)
                 }
                 
             }
@@ -83,16 +87,19 @@ struct ContentView: View {
                 HStack {
                     Text("Intensity")
                     Slider(value: intensityBinding)
+                        .disabled(filterIntensityDisabled)
                 }
                 
                 HStack {
                     Text("Radius")
                     Slider(value: radiusBinding)
+                        .disabled(filterRadiusDisabled)
                 }
                 
                 HStack {
                     Text("Scale")
                     Slider(value: scaleBinding)
+                        .disabled(filterScaleDisabled)
                 }
             }
             .padding(.vertical)
@@ -101,6 +108,7 @@ struct ContentView: View {
                 Button("Change Filter (\(currentFilterName))") {
                     self.showingFilterSheet = true
                 }
+                .disabled(image == nil)
                 
                 Spacer()
                 
@@ -131,41 +139,44 @@ struct ContentView: View {
                     
                     imageSaver.writeToPhotoLibrary(processedUIImage)
                 }
+                .disabled(image == nil)
             }
         }
         .padding([.bottom, .horizontal])
         .navigationBarTitle("Instafilter")
-        .sheet(isPresented: $showingImagePicker, onDismiss: loadImage) {
+        .sheet(isPresented: $showingImagePicker, onDismiss: {
+            self.setFilter(CIFilter.sepiaTone(), "Sepia Tone")
+        }, content: {
             ImagePicker(inputUIImage: self.$inputUIImage)
-        }
-        .actionSheet(isPresented: $showingFilterSheet) {
-            ActionSheet(
-                title: Text("Filter List"),
-                message: Text("Choose a filter"),
-                buttons: [
-                    .default(Text("Crystallize")) {
-                        self.setFilter(CIFilter.crystallize(), "Crystallize")
-                    },
-                    .default(Text("Edges")) {
-                        self.setFilter(CIFilter.edges(), "Edges")
-                    },
-                    .default(Text("Gaussian Blur")) {
-                        self.setFilter(CIFilter.gaussianBlur(), "Gaussian Blur")
-                    },
-                    .default(Text("Pixellate")) {
-                        self.setFilter(CIFilter.pixellate(), "Pixellate")
-                    },
-                    .default(Text("Sepia Tone")) {
-                        self.setFilter(CIFilter.sepiaTone(), "Sepia Tone")
-                    },
-                    .default(Text("Unsharp Mask")) {
-                        self.setFilter(CIFilter.unsharpMask(), "Unsharp Mask")
-                    },
-                    .default(Text("Vignette")) {
-                        self.setFilter(CIFilter.vignette(), "Vignette")
-                    },
-                    .cancel()
-            ])
+        })
+            .actionSheet(isPresented: $showingFilterSheet) {
+                ActionSheet(
+                    title: Text("Filter List"),
+                    message: Text("Choose a filter"),
+                    buttons: [
+                        .default(Text("Crystallize")) {
+                            self.setFilter(CIFilter.crystallize(), "Crystallize")
+                        },
+                        .default(Text("Edges")) {
+                            self.setFilter(CIFilter.edges(), "Edges")
+                        },
+                        .default(Text("Gaussian Blur")) {
+                            self.setFilter(CIFilter.gaussianBlur(), "Gaussian Blur")
+                        },
+                        .default(Text("Pixellate")) {
+                            self.setFilter(CIFilter.pixellate(), "Pixellate")
+                        },
+                        .default(Text("Sepia Tone")) {
+                            self.setFilter(CIFilter.sepiaTone(), "Sepia Tone")
+                        },
+                        .default(Text("Unsharp Mask")) {
+                            self.setFilter(CIFilter.unsharpMask(), "Unsharp Mask")
+                        },
+                        .default(Text("Vignette")) {
+                            self.setFilter(CIFilter.vignette(), "Vignette")
+                        },
+                        .cancel()
+                ])
         }
         .alert(isPresented: $showingSavingStatus) {
             Alert(title: Text("\(self.savingStatusTitle)"), message: Text("\(self.savingStatusMsg)"), dismissButton: .default(Text("Got it")))
@@ -176,6 +187,23 @@ struct ContentView: View {
     func setFilter(_ filter: CIFilter, _ filterName: String) {
         self.currentFilter = filter
         self.currentFilterName = filterName
+        
+        // Reset stuff
+        filterIntensityDisabled = true
+        filterScaleDisabled = true
+        filterScaleDisabled = true
+        
+        let inputKeys = currentFilter.inputKeys
+        if inputKeys.contains(kCIInputIntensityKey) {
+            filterIntensityDisabled = false
+        }
+        if inputKeys.contains(kCIInputRadiusKey) {
+            filterRadiusDisabled = false
+        }
+        if inputKeys.contains(kCIInputScaleKey) {
+            filterScaleDisabled = false
+        }
+        
         loadImage()
     }
     
@@ -190,17 +218,16 @@ struct ContentView: View {
     }
     
     func applyProcessing() {
-        // currentFilter.intensity = Float(filterIntensity)
-        // currentFilter.setValue(Float(filterIntensity), forKey: kCIInputIntensityKey) // This could crash!
-        let inputKeys = currentFilter.inputKeys
-        if inputKeys.contains(kCIInputIntensityKey) {
+        if (!filterIntensityDisabled) {
             currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey)
         }
-        if inputKeys.contains(kCIInputRadiusKey) {
-            currentFilter.setValue(filterIntensity * 180, forKey: kCIInputRadiusKey)
+        
+        if (!filterRadiusDisabled) {
+            currentFilter.setValue(filterRadius * 270, forKey: kCIInputRadiusKey)
         }
-        if inputKeys.contains(kCIInputScaleKey) {
-            currentFilter.setValue(filterIntensity * 9, forKey: kCIInputScaleKey)
+        
+        if (!filterScaleDisabled) {
+            currentFilter.setValue(filterScale * 26, forKey: kCIInputScaleKey)
         }
         
         guard
