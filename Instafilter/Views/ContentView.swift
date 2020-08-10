@@ -155,25 +155,25 @@ struct ContentView: View {
                     message: Text("Choose a filter"),
                     buttons: [
                         .default(Text("Crystallize")) {
-                            self.setFilter(CIFilter.crystallize(), "Crystallize")
+                            self.setFilter(CIFilter(name: "CICrystallize")!, "Crystallize")
                         },
                         .default(Text("Edges")) {
-                            self.setFilter(CIFilter.edges(), "Edges")
+                            self.setFilter(CIFilter(name: "CIEdges")!, "Edges")
                         },
                         .default(Text("Gaussian Blur")) {
-                            self.setFilter(CIFilter.gaussianBlur(), "Gaussian Blur")
+                            self.setFilter(CIFilter(name: "CIGaussianBlur")!, "Gaussian Blur")
                         },
                         .default(Text("Pixellate")) {
-                            self.setFilter(CIFilter.pixellate(), "Pixellate")
+                            self.setFilter(CIFilter(name: "CIPixellate")!, "Pixellate")
                         },
                         .default(Text("Sepia Tone")) {
-                            self.setFilter(CIFilter.sepiaTone(), "Sepia Tone")
+                            self.setFilter(CIFilter(name: "CISepiaTone")!, "Sepia Tone")
                         },
                         .default(Text("Unsharp Mask")) {
-                            self.setFilter(CIFilter.unsharpMask(), "Unsharp Mask")
+                            self.setFilter(CIFilter(name: "CIUnsharpMask")!, "Unsharp Mask")
                         },
                         .default(Text("Vignette")) {
-                            self.setFilter(CIFilter.vignette(), "Vignette")
+                            self.setFilter(CIFilter(name: "CIVignette")!, "Vignette")
                         },
                         .cancel()
                 ])
